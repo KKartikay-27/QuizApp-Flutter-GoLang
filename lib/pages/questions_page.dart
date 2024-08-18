@@ -26,7 +26,7 @@ class _QuestionsPageState extends State<QuestionsPage> with SingleTickerProvider
     // Initialize AnimationController
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300), // Duration of animation
+      duration: const Duration(milliseconds: 300),
     );
 
     // Initialize Tween for progress animation
@@ -38,7 +38,6 @@ class _QuestionsPageState extends State<QuestionsPage> with SingleTickerProvider
       curve: Curves.easeInOut,
     ));
 
-    // Start with the correct initial progress
     _animationController.forward(from: 0.0);
   }
 
@@ -71,7 +70,6 @@ class _QuestionsPageState extends State<QuestionsPage> with SingleTickerProvider
         _animationController.forward(from: 0.0);
       });
     } else {
-      // Navigate to ResultsPage when last question is done
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -125,42 +123,62 @@ class _QuestionsPageState extends State<QuestionsPage> with SingleTickerProvider
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  if (question['image_url'] != null) ...[
+                    Image.network(
+                      question['image_url'],
+                      errorBuilder: (context, error, stackTrace) {
+                        return Center(child: Text('Error loading image: $error'));
+                      },
+                      loadingBuilder: (context, child, progress) {
+                        if (progress == null) {
+                          return child;
+                        } else {
+                          return Center(child: CircularProgressIndicator());
+                        }
+                      },
+                    ),
+                    SizedBox(height: 20),
+                  ],
                   Text(
                     question['question'],
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   SizedBox(height: 20),
-                  ...options.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final option = entry.value;
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: options.length,
+                      itemBuilder: (context, index) {
+                        final option = options[index];
 
-                    return GestureDetector(
-                      onTap: () {
-                        if (!_isAnswered) {
-                          setState(() {
-                            selectedOptionIndex = index;
-                          });
-                        }
+                        return GestureDetector(
+                          onTap: () {
+                            if (!_isAnswered) {
+                              setState(() {
+                                selectedOptionIndex = index;
+                              });
+                            }
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(vertical: 8.0),
+                            padding: const EdgeInsets.all(16.0),
+                            decoration: BoxDecoration(
+                              color: _isAnswered
+                                  ? index == question['answer']
+                                  ? Colors.green
+                                  : index == selectedOptionIndex
+                                  ? Colors.red
+                                  : Colors.grey[300]
+                                  : (index == selectedOptionIndex
+                                  ? Colors.purple[200]
+                                  : Colors.grey[300]),
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: Text(option),
+                          ),
+                        );
                       },
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(vertical: 8.0),
-                        padding: const EdgeInsets.all(16.0),
-                        decoration: BoxDecoration(
-                          color: _isAnswered
-                              ? index == question['answer']
-                              ? Colors.green
-                              : index == selectedOptionIndex
-                              ? Colors.red
-                              : Colors.grey[300]
-                              : (index == selectedOptionIndex
-                              ? Colors.purple[200]
-                              : Colors.grey[300]),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        child: Text(option),
-                      ),
-                    );
-                  }).toList(),
+                    ),
+                  ),
                   SizedBox(height: 20),
                   if (!_isAnswered)
                     ElevatedButton(
