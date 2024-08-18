@@ -126,6 +126,8 @@ class _QuestionsPageState extends State<QuestionsPage> with SingleTickerProvider
                   if (question['image_url'] != null) ...[
                     Image.network(
                       question['image_url'],
+                      height: 200, // Set desired height
+                      fit: BoxFit.contain, // Adjust to maintain aspect ratio
                       errorBuilder: (context, error, stackTrace) {
                         return Center(child: Text('Error loading image: $error'));
                       },
