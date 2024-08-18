@@ -11,19 +11,26 @@ type Question struct {
 	QuestionText string   `json:"question"`
 	Options      []string `json:"options"`
 	Answer       int      `json:"answer"`       // Index of the correct answer
-	Explanation  string   `json:"explanation"`  // Added explanation field
+	Explanation  string   `json:"explanation"`  // Explanation field
+	ImageURL     *string  `json:"image_url"`    // Optional image_url field
 }
 
 func getQuestions(w http.ResponseWriter, r *http.Request) {
 	log.Println("Endpoint Hit: getQuestions") // Log to check if endpoint is called
 
 	questions := []Question{
-		{ID: 1, QuestionText: "What is Flutter?", Options: []string{"A framework", "A library", "A language", "An IDE"}, Answer: 0, Explanation: "Flutter is a UI toolkit for building natively compiled applications."},
-		{ID: 2, QuestionText: "What is Go?", Options: []string{"A framework", "A library", "A language", "An IDE"}, Answer: 2, Explanation: "Go is a statically typed, compiled programming language designed for simplicity and efficiency."},
+		{ID: 1, QuestionText: "What is the capital of France?", ImageURL: stringPtr("https://upload.wikimedia.org/wikipedia/en/thumb/c/c3/Flag_of_France.svg/1920px-Flag_of_France.svg.png"), Options: []string{"Berlin", "Madrid", "Paris", "Rome"}, Answer: 2, Explanation: "Paris is the capital city of France."},
+		{ID: 2, QuestionText: "What is the largest planet in our solar system?", ImageURL: stringPtr("https://upload.wikimedia.org/wikipedia/commons/c/c1/Jupiter_New_Horizons.jpg"), Options: []string{"Earth", "Mars", "Jupiter", "Saturn"}, Answer: 2, Explanation: "Jupiter is the largest planet in our solar system."},
+		{ID: 3, QuestionText: "Who wrote 'To Kill a Mockingbird'?", Options: []string{"Harper Lee", "Mark Twain", "J.K. Rowling", "Ernest Hemingway"}, Answer: 0, Explanation: "Harper Lee is the author of 'To Kill a Mockingbird'."},
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(questions)
+}
+
+// Helper function to return a pointer to a string
+func stringPtr(s string) *string {
+	return &s
 }
 
 func main() {
