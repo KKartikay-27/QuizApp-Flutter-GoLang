@@ -16,6 +16,16 @@ type Question struct {
 }
 
 func getQuestions(w http.ResponseWriter, r *http.Request) {
+	// Add CORS headers
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	// Handle preflight OPTIONS request
+	if r.Method == http.MethodOptions {
+		return
+	}
+
 	log.Println("Endpoint Hit: getQuestions") // Log to check if endpoint is called
 
 	questions := []Question{
