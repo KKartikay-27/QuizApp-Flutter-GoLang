@@ -6,12 +6,12 @@ part 'question.g.dart';
 class Question {
   final String questionText;
   final List<String> options;
-  final Map<String, String> explanations;
+  final int correctOptionIndex;
 
   Question({
     required this.questionText,
     required this.options,
-    required this.explanations,
+    required this.correctOptionIndex,
   });
 
   factory Question.fromJson(Map<String, dynamic> json) => _$QuestionFromJson(json);

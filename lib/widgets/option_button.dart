@@ -1,5 +1,3 @@
-// lib/widgets/option_button.dart
-
 import 'package:flutter/material.dart';
 
 class OptionButton extends StatelessWidget {
@@ -17,13 +15,11 @@ class OptionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: () => _selectOption(index),
+      onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        primary: isSelected
-            ? (isCorrect ? Colors.green : Colors.red)
-            : Colors.grey,
+        backgroundColor: backgroundColor, // Use backgroundColor instead of primary
       ),
-      child: Text(question.options[index]),
+      child: Text(text),
     );
   }
 }

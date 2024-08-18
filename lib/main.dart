@@ -1,8 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'pages/questions_page.dart'; // Update with your correct path
-import 'pages/results_page.dart'; // Update with your correct path
+import 'dart:convert';
+import 'pages/welcome_page.dart';
+import 'pages/results_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -16,48 +16,37 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => WelcomePage(),
-        '/questions': (context) => QuestionsPage(questions: []), // This will be updated dynamically
-        '/results': (context) => ResultsPage(correctAnswers: 0, totalQuestions: 0), // Placeholder
-      },
+      home: FutureBuilder<List<Map<String, dynamic>>>(
+        future: fetchQuestions(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          } else if (snapshot.hasError) {
+            return Scaffold(
+              body: Center(child: Text('Failed to load questions')),
+            );
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            // Navigate to ResultsPage if no questions are available
+            return ResultsPage(correctAnswers: 0, totalQuestions: 0);
+          } else {
+            // Navigate to WelcomePage with the fetched questions
+            return WelcomePage(questions: snapshot.data!);
+          }
+        },
+      ),
     );
   }
 }
 
-class WelcomePage extends StatelessWidget {
-  Future<void> _fetchQuestionsAndNavigate(BuildContext context) async {
-    try {
-      final response = await http.get(Uri.parse('http://10.0.2.2:8080/questions'));
-      if (response.statusCode == 200) {
-        List<dynamic> questions = json.decode(response.body);
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => QuestionsPage(questions: questions),
-          ),
-        );
-      } else {
-        print('Failed to load questions: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error fetching questions: $e');
-    }
-  }
+Future<List<Map<String, dynamic>>> fetchQuestions() async {
+  final response = await http.get(Uri.parse('http://10.0.2.2:8080/questions'));
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Welcome'),
-      ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () => _fetchQuestionsAndNavigate(context),
-          child: Text('Start Quiz'),
-        ),
-      ),
-    );
+  if (response.statusCode == 200) {
+    List<dynamic> data = json.decode(response.body);
+    return data.map((item) => item as Map<String, dynamic>).toList();
+  } else {
+    throw Exception('Failed to load questions');
   }
 }

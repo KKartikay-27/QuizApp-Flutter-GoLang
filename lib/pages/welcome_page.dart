@@ -1,27 +1,10 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'pages/questions_page.dart'; // Update with your correct path
+import 'questions_page.dart';
 
 class WelcomePage extends StatelessWidget {
-  Future<void> _fetchQuestionsAndNavigate(BuildContext context) async {
-    try {
-      final response = await http.get(Uri.parse('http://10.0.2.2:8080/questions'));
-      if (response.statusCode == 200) {
-        List<dynamic> questions = json.decode(response.body);
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => QuestionsPage(questions: questions),
-          ),
-        );
-      } else {
-        // Handle errors here
-      }
-    } catch (e) {
-      // Handle errors here
-    }
-  }
+  final List<Map<String, dynamic>> questions;
+
+  WelcomePage({required this.questions});
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +14,14 @@ class WelcomePage extends StatelessWidget {
       ),
       body: Center(
         child: ElevatedButton(
-          onPressed: () => _fetchQuestionsAndNavigate(context),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => QuestionsPage(questions: questions),
+              ),
+            );
+          },
           child: Text('Start Quiz'),
         ),
       ),

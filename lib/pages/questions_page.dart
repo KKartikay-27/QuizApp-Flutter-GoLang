@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:quizapp/pages/results_page.dart'; // Ensure this import is correct
+import 'results_page.dart';
 
 class QuestionsPage extends StatefulWidget {
-  final List<dynamic> questions;
+  final List<Map<String, dynamic>> questions;
 
   QuestionsPage({required this.questions});
 
@@ -11,106 +11,126 @@ class QuestionsPage extends StatefulWidget {
 }
 
 class _QuestionsPageState extends State<QuestionsPage> {
-  int currentQuestionIndex = 0;
-  bool answerChecked = false;
+  int _currentQuestionIndex = 0;
+  int _correctAnswers = 0;
+  bool _isAnswered = false;
+  bool _showExplanation = false;
   int? selectedOptionIndex;
-  int? correctAnswer;
-  int correctAnswers = 0;
 
-  void _selectOption(int index) {
-    if (!answerChecked) {
-      setState(() {
-        selectedOptionIndex = index;
-        answerChecked = true;
-        correctAnswer = widget.questions[currentQuestionIndex]['answer'];
-        if (selectedOptionIndex == correctAnswer) {
-          correctAnswers++;
-        }
-      });
-    }
+  void _submitAnswer() {
+    if (selectedOptionIndex == null || _isAnswered) return; // Prevent multiple submissions
+    setState(() {
+      _isAnswered = true;
+      if (selectedOptionIndex == widget.questions[_currentQuestionIndex]['answer']) {
+        _correctAnswers++;
+      }
+    });
   }
 
   void _nextQuestion() {
-    setState(() {
-      answerChecked = false;
-      selectedOptionIndex = null;
-      currentQuestionIndex++;
-      if (currentQuestionIndex >= widget.questions.length) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ResultsPage(
-              correctAnswers: correctAnswers,
-              totalQuestions: widget.questions.length,
-            ),
+    if (_currentQuestionIndex < widget.questions.length - 1) {
+      setState(() {
+        _currentQuestionIndex++;
+        _isAnswered = false;
+        _showExplanation = false;
+        selectedOptionIndex = null;
+      });
+    } else {
+      // Navigate to ResultsPage when last question is done
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ResultsPage(
+            correctAnswers: _correctAnswers,
+            totalQuestions: widget.questions.length,
           ),
-        );
-      }
+        ),
+      );
+    }
+  }
+
+  void _toggleExplanation() {
+    setState(() {
+      _showExplanation = !_showExplanation;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.questions.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text('Quiz Questions'),
-        ),
-        body: Center(
-          child: Text('No questions available.'),
-        ),
-      );
-    }
-
-    final question = widget.questions[currentQuestionIndex];
+    final question = widget.questions[_currentQuestionIndex];
+    final options = question['options'] as List<dynamic>;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Quiz Questions'),
+        title: Text('Question ${_currentQuestionIndex + 1}'),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
               question['question'],
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
-            SizedBox(height: 16.0),
-            ...question['options'].asMap().entries.map((entry) {
+            SizedBox(height: 20),
+            ...options.asMap().entries.map((entry) {
               final index = entry.key;
               final option = entry.value;
-              bool isSelected = selectedOptionIndex == index;
-              bool isCorrect = index == correctAnswer;
-              Color backgroundColor = Colors.transparent;
 
-              if (answerChecked) {
-                if (isSelected) {
-                  backgroundColor = isCorrect ? Colors.green : Colors.red;
-                } else if (index == correctAnswer) {
-                  backgroundColor = Colors.green;
-                }
-              }
-
-              return Padding(
-                padding: EdgeInsets.symmetric(vertical: 4.0),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: backgroundColor,
-                    padding: EdgeInsets.symmetric(vertical: 14.0),
+              return GestureDetector(
+                onTap: () {
+                  if (!_isAnswered) {
+                    setState(() {
+                      selectedOptionIndex = index;
+                    });
+                  }
+                },
+                child: Container(
+                  margin: const EdgeInsets.symmetric(vertical: 8.0),
+                  padding: const EdgeInsets.all(16.0),
+                  decoration: BoxDecoration(
+                    color: _isAnswered
+                        ? index == question['answer']
+                        ? Colors.green
+                        : index == selectedOptionIndex
+                        ? Colors.red
+                        : Colors.grey[300]
+                        : (index == selectedOptionIndex
+                        ? Colors.blue[100]
+                        : Colors.grey[300]),
+                    borderRadius: BorderRadius.circular(8.0),
                   ),
-                  onPressed: () => _selectOption(index),
                   child: Text(option),
                 ),
               );
             }).toList(),
-            SizedBox(height: 20.0),
-            if (answerChecked)
+            SizedBox(height: 20),
+            if (!_isAnswered)
+              ElevatedButton(
+                onPressed: _submitAnswer,
+                child: Text('Submit'),
+              ),
+            if (_isAnswered) ...[
+              ElevatedButton(
+                onPressed: _toggleExplanation,
+                child: Text(_showExplanation ? 'Hide Explanation' : 'Show Explanation'),
+              ),
+              if (_showExplanation)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: Text(
+                    question['explanation'],
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
               ElevatedButton(
                 onPressed: _nextQuestion,
-                child: Text(currentQuestionIndex < widget.questions.length - 1 ? 'Next Question' : 'See Results'),
+                child: Text(_currentQuestionIndex == widget.questions.length - 1
+                    ? 'Show Results'
+                    : 'Next Question'),
               ),
+            ],
           ],
         ),
       ),
