@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
 }
 
 Future<List<Map<String, dynamic>>> fetchQuestions() async {
-  final response = await http.get(Uri.parse('http://10.0.2.2:8080/questions'));
+  final response = await http.get(Uri.parse('https://quizapp-flutter-golang.onrender.com/questions'));
 
   if (response.statusCode == 200) {
     List<dynamic> data = json.decode(response.body);
