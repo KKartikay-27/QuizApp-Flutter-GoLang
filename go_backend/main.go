@@ -32,7 +32,7 @@ func getQuestions(w http.ResponseWriter, r *http.Request) {
 		{ID: 1, QuestionText: "What is the capital of France?", ImageURL: stringPtr("https://upload.wikimedia.org/wikipedia/en/thumb/c/c3/Flag_of_France.svg/1920px-Flag_of_France.svg.png"), Options: []string{"Berlin", "Madrid", "Paris", "Rome"}, Answer: 2, Explanation: "Paris is the capital city of France."},
 		{ID: 2, QuestionText: "What is the largest planet in our solar system?", ImageURL: stringPtr("https://upload.wikimedia.org/wikipedia/commons/c/c1/Jupiter_New_Horizons.jpg"), Options: []string{"Earth", "Mars", "Jupiter", "Saturn"}, Answer: 2, Explanation: "Jupiter is the largest planet in our solar system."},
 		{ID: 3, QuestionText: "Who wrote 'To Kill a Mockingbird'?", Options: []string{"Harper Lee", "Mark Twain", "J.K. Rowling", "Ernest Hemingway"}, Answer: 0, Explanation: "Harper Lee is the author of 'To Kill a Mockingbird'."},
-	    {ID: 4, QuestionText: "Is 31 a prime Number >", Options: []string{"Yes", "No"}, Answer: 0, Explanation: "31 is only divisible by 1 and 31."},
+	    {ID: 4, QuestionText: "Is 31 a prime Number ?", Options: []string{"Yes", "No"}, Answer: 0, Explanation: "31 is only divisible by 1 and 31."},
 	}
 
 	w.Header().Set("Content-Type", "application/json")
